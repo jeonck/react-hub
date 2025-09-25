@@ -119,6 +119,18 @@ npm run preview
 
 ----------------------------------------
 
+⚠️ **빌드 유의사항: Tailwind CSS PostCSS 플러그인 설정**
+
+이 프로젝트는 `spring-boot-hub` 레포지토리와의 호환성을 위해 `tailwindcss` v3.x 버전을 사용합니다. `tailwindcss` v4.x부터 PostCSS 플러그인이 별도의 `@tailwindcss/postcss` 패키지로 분리되었으므로, 빌드 시 관련 오류가 발생할 수 있습니다.
+
+**오류 방지를 위한 설정:**
+*   `package.json`의 `tailwindcss`, `postcss`, `autoprefixer` 버전을 `spring-boot-hub`의 `react-app`에서 사용된 버전(예: `tailwindcss@3.3.0`, `postcss@8.4.24`, `autoprefixer@10.4.14`)으로 맞춥니다.
+*   `postcss.config.js` 파일에서 `plugins` 설정을 `tailwindcss: {}`로 유지해야 합니다.
+
+최신 `tailwindcss` v4.x를 사용하려면 `@tailwindcss/postcss`를 설치하고 `postcss.config.js`를 업데이트해야 하지만, 현재 프로젝트는 v3.x 기반으로 설정되어 있습니다.
+
+----------------------------------------
+
 📚 학습 콘텐츠
 
 🎨 **핵심 디자인 패턴 및 개념**
@@ -181,9 +193,8 @@ React 개발 중 자주 발생하는 문제와 해결 방법을 안내합니다.
 **Q4: `key` prop은 왜 필요한가요?**
 **A4:** React에서 리스트를 렌더링할 때 각 항목에 고유한 `key` prop을 제공해야 합니다. `key`는 React가 리스트의 항목들을 식별하고, 변경 사항을 효율적으로 업데이트하는 데 도움을 줍니다. `key`가 없거나 고유하지 않으면 성능 저하 및 예상치 못한 동작이 발생할 수 있습니다.
 
-**Q5: CORS(Cross-Origin Resource Sharing) 오류가 발생해요.**
-**Q6: Tailwind CSS PostCSS 플러그인 오류가 발생해요 (`@tailwindcss/postcss` 관련).**
-**A6:** `tailwindcss` v4.x부터 PostCSS 플러그인이 별도의 `@tailwindcss/postcss` 패키지로 분리되었습니다. 이 프로젝트는 `spring-boot-hub` 레포지토리와의 호환성을 위해 `tailwindcss` v3.x 버전을 사용합니다. 만약 이 오류가 발생한다면, `package.json`의 `tailwindcss`, `postcss`, `autoprefixer` 버전을 `spring-boot-hub`의 `react-app`에서 사용된 버전(예: `tailwindcss@3.3.0`, `postcss@8.4.24`, `autoprefixer@10.4.14`)으로 맞추고, `postcss.config.js` 파일에서 `plugins` 설정을 `tailwindcss: {}`로 유지해야 합니다. 최신 `tailwindcss` v4.x를 사용하려면 `@tailwindcss/postcss`를 설치하고 `postcss.config.js`를 업데이트해야 합니다.
+Q5: CORS(Cross-Origin Resource Sharing) 오류가 발생해요.
+**A5:** 프런트엔드 애플리케이션이 다른 도메인의 API 서버에 요청할 때 발생하는 보안 문제입니다. 개발 환경에서는 프록시 설정을 통해 해결할 수 있으며, 프로덕션 환경에서는 백엔드 서버에서 CORS 헤더를 올바르게 설정해야 합니다.
 
 ----------------------------------------
 
