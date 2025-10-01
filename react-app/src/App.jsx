@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import { sections, featuredResources, quickLinks } from './data/sections'
+import { quickStartSteps, essentialSnippets } from './data/quickstart'
 import Header from './components/Header'
 import Navigation from './components/Navigation'
 import Section from './components/Section'
 import SearchBar from './components/SearchBar'
+import QuickStart from './components/QuickStart'
+import CodeSnippets from './components/CodeSnippets'
 import Footer from './components/Footer'
 
 function App() {
@@ -33,6 +36,20 @@ function App() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+
+        {/* Quick Start Guide - Always visible at top */}
+        {!searchQuery && activeSection === 'all' && (
+          <div className="mt-8">
+            <QuickStart steps={quickStartSteps} />
+          </div>
+        )}
+
+        {/* Code Snippets - Always visible */}
+        {!searchQuery && activeSection === 'all' && (
+          <div className="mt-8">
+            <CodeSnippets snippets={essentialSnippets} />
+          </div>
+        )}
 
         <Navigation
           sections={sections}
