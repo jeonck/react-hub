@@ -2,14 +2,11 @@ export default function Section({ section }) {
   return (
     <section id={section.id} className="scroll-mt-24">
       <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-4xl">{section.emoji}</span>
-          <div>
-            <h2 className="text-2xl font-bold text-white">
-              {section.title.replace(/^[🚀📚⚡🛠️🔄🎨🧪🚢👥📈]\s*/, '')}
-            </h2>
-            <p className="text-blue-200/60">{section.description}</p>
-          </div>
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold text-white">
+            {section.title}
+          </h2>
+          <p className="text-blue-200/60">{section.description}</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4 mt-6">

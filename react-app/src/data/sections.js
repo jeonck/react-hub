@@ -1,8 +1,8 @@
 export const sections = [
   {
     id: 'getting-started',
-    title: '🚀 시작하기',
-    emoji: '🚀',
+    title: '시작하기',
+    emoji: '',
     description: '리액트 입문 가이드와 환경 설정',
     items: [
       {
@@ -27,8 +27,8 @@ export const sections = [
   },
   {
     id: 'core-concepts',
-    title: '📚 핵심 개념',
-    emoji: '📚',
+    title: '핵심 개념',
+    emoji: '',
     description: '리액트의 기본 원리와 필수 개념',
     items: [
       {
@@ -65,8 +65,8 @@ export const sections = [
   },
   {
     id: 'advanced',
-    title: '⚡ 고급 주제',
-    emoji: '⚡',
+    title: '고급 주제',
+    emoji: '',
     description: '실무 최적화와 고급 기술',
     items: [
       {
@@ -103,8 +103,8 @@ export const sections = [
   },
   {
     id: 'frameworks',
-    title: '🛠️ 프레임워크 & 도구',
-    emoji: '🛠️',
+    title: '프레임워크 & 도구',
+    emoji: '',
     description: '프로덕션 환경을 위한 도구',
     items: [
       {
@@ -141,8 +141,8 @@ export const sections = [
   },
   {
     id: 'state-management',
-    title: '🔄 상태 관리',
-    emoji: '🔄',
+    title: '상태 관리',
+    emoji: '',
     description: '글로벌 상태 관리 솔루션',
     items: [
       {
@@ -179,8 +179,8 @@ export const sections = [
   },
   {
     id: 'styling',
-    title: '🎨 스타일링',
-    emoji: '🎨',
+    title: '스타일링',
+    emoji: '',
     description: '컴포넌트 스타일링 방법',
     items: [
       {
@@ -217,8 +217,8 @@ export const sections = [
   },
   {
     id: 'testing',
-    title: '🧪 테스팅',
-    emoji: '🧪',
+    title: '테스팅',
+    emoji: '',
     description: '안정적인 앱을 위한 테스트',
     items: [
       {
@@ -249,8 +249,8 @@ export const sections = [
   },
   {
     id: 'deployment',
-    title: '🚢 배포',
-    emoji: '🚢',
+    title: '배포',
+    emoji: '',
     description: '프로덕션 배포 플랫폼',
     items: [
       {
@@ -281,8 +281,8 @@ export const sections = [
   },
   {
     id: 'community',
-    title: '👥 커뮤니티',
-    emoji: '👥',
+    title: '커뮤니티',
+    emoji: '',
     description: '학습 자료와 커뮤니티',
     items: [
       {
@@ -319,8 +319,8 @@ export const sections = [
   },
   {
     id: 'trends',
-    title: '📈 최신 트렌드',
-    emoji: '📈',
+    title: '최신 트렌드',
+    emoji: '',
     description: '2025년 리액트 생태계 트렌드',
     items: [
       {

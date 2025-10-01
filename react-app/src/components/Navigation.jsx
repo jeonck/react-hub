@@ -1,9 +1,4 @@
 export default function Navigation({ sections, activeSection, setActiveSection }) {
-  // 이모지를 제거한 제목만 추출
-  const getCleanTitle = (title) => {
-    return title.replace(/^[🚀📚⚡🛠️🔄🎨🧪🚢👥📈]\s*/, '').trim()
-  }
-
   return (
     <nav className="mt-8">
       <div className="flex flex-wrap gap-3 justify-center">
@@ -27,7 +22,7 @@ export default function Navigation({ sections, activeSection, setActiveSection }
                 : 'bg-white/10 text-white/80 hover:bg-white/20'
             }`}
           >
-            {getCleanTitle(section.title)}
+            {section.title}
           </button>
         ))}
       </div>
