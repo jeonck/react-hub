@@ -637,5 +637,564 @@ function SearchList({ items }) {
         tags: ['Tailwind', 'card', 'layout']
       }
     ]
+  },
+  {
+    category: 'Refs & DOM',
+    icon: '🎯',
+    snippets: [
+      {
+        title: 'useRef - DOM 조작',
+        code: `import { useRef, useEffect } from 'react';
+
+function AutoFocusInput() {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    // 컴포넌트 마운트 시 input에 포커스
+    inputRef.current?.focus();
+  }, []);
+
+  const handleClear = () => {
+    inputRef.current.value = '';
+    inputRef.current.focus();
+  };
+
+  return (
+    <div>
+      <input ref={inputRef} type="text" />
+      <button onClick={handleClear}>Clear</button>
+    </div>
+  );
+}`,
+        tags: ['useRef', 'DOM', 'focus']
+      },
+      {
+        title: 'forwardRef - Ref 전달',
+        code: `import { forwardRef } from 'react';
+
+const CustomInput = forwardRef(function CustomInput(props, ref) {
+  return (
+    <input
+      ref={ref}
+      {...props}
+      className="px-4 py-2 border rounded"
+    />
+  );
+});
+
+// 사용 예시
+function Parent() {
+  const inputRef = useRef(null);
+
+  return (
+    <div>
+      <CustomInput ref={inputRef} placeholder="Type here..." />
+      <button onClick={() => inputRef.current.focus()}>
+        Focus Input
+      </button>
+    </div>
+  );
+}`,
+        tags: ['forwardRef', 'ref', 'component']
+      }
+    ]
+  },
+  {
+    category: '에러 처리',
+    icon: '🛡️',
+    snippets: [
+      {
+        title: 'Error Boundary',
+        code: `import { Component } from 'react';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error caught:', error, errorInfo);
+    // 에러 로깅 서비스로 전송 (예: Sentry)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 bg-red-50 rounded">
+          <h2 className="text-xl font-bold text-red-600 mb-2">
+            Something went wrong
+          </h2>
+          <p className="text-red-500">{this.state.error?.message}</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// 사용 예시
+<ErrorBoundary>
+  <App />
+</ErrorBoundary>`,
+        tags: ['Error Boundary', '에러', 'class component']
+      },
+      {
+        title: 'try-catch 패턴',
+        code: `import { useState } from 'react';
+
+function DataFetcher() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/data');
+
+      if (!response.ok) {
+        throw new Error(\`HTTP error! status: \${response.status}\`);
+      }
+
+      const json = await response.json();
+      setData(json);
+    } catch (err) {
+      setError(err.message);
+      console.error('Fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={fetchData} disabled={loading}>
+        {loading ? 'Loading...' : 'Fetch Data'}
+      </button>
+      {error && <div className="text-red-500">Error: {error}</div>}
+      {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
+    </div>
+  );
+}`,
+        tags: ['try-catch', '에러 처리', 'async']
+      }
+    ]
+  },
+  {
+    category: '라우팅 (React Router)',
+    icon: '🛣️',
+    snippets: [
+      {
+        title: 'React Router v6 기본 설정',
+        code: `import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <nav>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/users">Users</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/users/:id" element={<UserDetail />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}`,
+        tags: ['React Router', '라우팅', 'v6']
+      },
+      {
+        title: 'useNavigate & useParams',
+        code: `import { useNavigate, useParams } from 'react-router-dom';
+
+function UserDetail() {
+  const { id } = useParams(); // URL 파라미터
+  const navigate = useNavigate(); // 프로그래밍 방식 네비게이션
+
+  const handleBack = () => {
+    navigate(-1); // 이전 페이지
+  };
+
+  const handleHome = () => {
+    navigate('/', { replace: true }); // 히스토리 교체
+  };
+
+  return (
+    <div>
+      <h1>User ID: {id}</h1>
+      <button onClick={handleBack}>Go Back</button>
+      <button onClick={handleHome}>Go Home</button>
+    </div>
+  );
+}`,
+        tags: ['useNavigate', 'useParams', 'navigation']
+      }
+    ]
+  },
+  {
+    category: '데이터 페칭 (TanStack Query)',
+    icon: '🔄',
+    snippets: [
+      {
+        title: 'useQuery 기본 사용',
+        code: `import { useQuery } from '@tanstack/react-query';
+
+function UserList() {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const res = await fetch('/api/users');
+      if (!res.ok) throw new Error('Failed to fetch');
+      return res.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5분
+    cacheTime: 10 * 60 * 1000, // 10분
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <button onClick={() => refetch()}>Refresh</button>
+      {data.map(user => (
+        <div key={user.id}>{user.name}</div>
+      ))}
+    </div>
+  );
+}`,
+        tags: ['TanStack Query', 'useQuery', 'fetch']
+      },
+      {
+        title: 'useMutation - 데이터 변경',
+        code: `import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+function CreateUser() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (newUser) => {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser),
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      // 성공 시 캐시 무효화 및 재페칭
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutation.mutate({ name: 'New User' });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <button disabled={mutation.isPending}>
+        {mutation.isPending ? 'Creating...' : 'Create User'}
+      </button>
+      {mutation.isError && <div>Error: {mutation.error.message}</div>}
+    </form>
+  );
+}`,
+        tags: ['useMutation', 'POST', 'cache']
+      }
+    ]
+  },
+  {
+    category: '애니메이션',
+    icon: '✨',
+    snippets: [
+      {
+        title: 'Framer Motion - 기본 애니메이션',
+        code: `import { motion } from 'framer-motion';
+
+function AnimatedBox() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -50 }}
+      transition={{ duration: 0.5 }}
+      className="w-32 h-32 bg-blue-500"
+    />
+  );
+}
+
+function FadeIn({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      {children}
+    </motion.div>
+  );
+}`,
+        tags: ['Framer Motion', 'animation', 'transition']
+      },
+      {
+        title: 'CSS Transition 훅',
+        code: `import { useState } from 'react';
+
+function useToggle(initialValue = false) {
+  const [value, setValue] = useState(initialValue);
+  const toggle = () => setValue(v => !v);
+  return [value, toggle];
+}
+
+function Accordion() {
+  const [isOpen, toggle] = useToggle(false);
+
+  return (
+    <div>
+      <button onClick={toggle}>Toggle</button>
+      <div
+        className={\`overflow-hidden transition-all duration-300 \${
+          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        }\`}
+      >
+        <p className="p-4">Accordion content here...</p>
+      </div>
+    </div>
+  );
+}`,
+        tags: ['CSS', 'transition', 'accordion']
+      }
+    ]
+  },
+  {
+    category: '인증 패턴',
+    icon: '🔐',
+    snippets: [
+      {
+        title: 'Protected Route',
+        code: `import { Navigate, Outlet } from 'react-router-dom';
+
+function ProtectedRoute({ isAuthenticated, children }) {
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children ? children : <Outlet />;
+}
+
+// 사용 예시
+<Routes>
+  <Route path="/login" element={<Login />} />
+  <Route
+    path="/dashboard"
+    element={
+      <ProtectedRoute isAuthenticated={user !== null}>
+        <Dashboard />
+      </ProtectedRoute>
+    }
+  />
+</Routes>`,
+        tags: ['auth', 'protected route', 'router']
+      },
+      {
+        title: 'Auth Context',
+        code: `import { createContext, useContext, useState } from 'react';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+
+  const login = async (email, password) => {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    setUser(data.user);
+    localStorage.setItem('token', data.token);
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('token');
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  return useContext(AuthContext);
+}`,
+        tags: ['auth', 'context', 'login']
+      }
+    ]
+  },
+  {
+    category: '무한 스크롤',
+    icon: '♾️',
+    snippets: [
+      {
+        title: 'Intersection Observer',
+        code: `import { useEffect, useRef, useState } from 'react';
+
+function useInfiniteScroll(callback) {
+  const observer = useRef(null);
+  const [node, setNode] = useState(null);
+
+  useEffect(() => {
+    if (observer.current) observer.current.disconnect();
+
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        callback();
+      }
+    });
+
+    if (node) observer.current.observe(node);
+
+    return () => observer.current?.disconnect();
+  }, [node, callback]);
+
+  return setNode;
+}
+
+// 사용 예시
+function InfiniteList() {
+  const [items, setItems] = useState([]);
+  const [page, setPage] = useState(1);
+
+  const loadMore = () => {
+    fetch(\`/api/items?page=\${page}\`)
+      .then(res => res.json())
+      .then(data => {
+        setItems(prev => [...prev, ...data]);
+        setPage(p => p + 1);
+      });
+  };
+
+  const lastItemRef = useInfiniteScroll(loadMore);
+
+  return (
+    <div>
+      {items.map((item, idx) => (
+        <div
+          key={item.id}
+          ref={idx === items.length - 1 ? lastItemRef : null}
+        >
+          {item.name}
+        </div>
+      ))}
+    </div>
+  );
+}`,
+        tags: ['infinite scroll', 'observer', 'pagination']
+      }
+    ]
+  },
+  {
+    category: '디바운스 & 쓰로틀',
+    icon: '⏱️',
+    snippets: [
+      {
+        title: 'useDebounce 훅',
+        code: `import { useState, useEffect } from 'react';
+
+function useDebounce(value, delay = 500) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// 사용 예시 - 검색
+function SearchInput() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
+  useEffect(() => {
+    if (debouncedSearch) {
+      // API 호출은 500ms 후에만 실행
+      fetch(\`/api/search?q=\${debouncedSearch}\`);
+    }
+  }, [debouncedSearch]);
+
+  return (
+    <input
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      placeholder="Search..."
+    />
+  );
+}`,
+        tags: ['debounce', 'performance', 'search']
+      },
+      {
+        title: 'useThrottle 훅',
+        code: `import { useRef, useCallback } from 'react';
+
+function useThrottle(callback, delay = 1000) {
+  const lastRun = useRef(Date.now());
+
+  return useCallback((...args) => {
+    const now = Date.now();
+
+    if (now - lastRun.current >= delay) {
+      callback(...args);
+      lastRun.current = now;
+    }
+  }, [callback, delay]);
+}
+
+// 사용 예시 - 스크롤 이벤트
+function ScrollTracker() {
+  const handleScroll = useThrottle(() => {
+    console.log('Scroll position:', window.scrollY);
+  }, 1000);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
+
+  return <div>Scroll to see throttled logs</div>;
+}`,
+        tags: ['throttle', 'performance', 'scroll']
+      }
+    ]
   }
 ];
