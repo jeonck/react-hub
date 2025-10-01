@@ -43,15 +43,15 @@ function App() {
           setActiveSection={setActiveSection}
         />
 
-        {/* Quick Start Guide - Always visible at top */}
+        {/* Quick Start Guide - Only on "all" */}
         {!searchQuery && activeSection === 'all' && (
           <div className="mt-8">
             <QuickStart steps={quickStartSteps} />
           </div>
         )}
 
-        {/* Code Snippets - Always visible */}
-        {!searchQuery && activeSection === 'all' && (
+        {/* Code Snippets - Always visible on all tabs */}
+        {!searchQuery && (
           <div className="mt-8">
             <CodeSnippets snippets={essentialSnippets} />
           </div>
