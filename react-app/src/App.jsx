@@ -37,6 +37,12 @@ function App() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
+        <Navigation
+          sections={sections}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
+        />
+
         {/* Quick Start Guide - Always visible at top */}
         {!searchQuery && activeSection === 'all' && (
           <div className="mt-8">
@@ -50,12 +56,6 @@ function App() {
             <CodeSnippets snippets={essentialSnippets} />
           </div>
         )}
-
-        <Navigation
-          sections={sections}
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-        />
 
         <div className="mt-12 space-y-12">
           {filteredSections.map(section => (
