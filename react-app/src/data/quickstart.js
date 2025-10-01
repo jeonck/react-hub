@@ -1196,5 +1196,593 @@ function ScrollTracker() {
         tags: ['throttle', 'performance', 'scroll']
       }
     ]
+  },
+  {
+    category: 'useState 흔한 실수',
+    icon: '⚠️',
+    snippets: [
+      {
+        title: '비동기 State 업데이트 문제',
+        code: `import { useState } from 'react';
+
+// ❌ 잘못된 방법 - 이전 값 기반 업데이트
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => {
+    setCount(count + 1); // ❌ 이전 state 직접 참조
+    setCount(count + 1); // ❌ 여전히 0 + 1 = 1
+    console.log(count); // ❌ 아직 0 (비동기)
+  };
+
+  return <button onClick={handleClick}>{count}</button>;
+}
+
+// ✅ 올바른 방법 - 함수형 업데이트
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => {
+    setCount(prev => prev + 1); // ✅ 이전 값 기반
+    setCount(prev => prev + 1); // ✅ 정확히 2 증가
+    // 즉시 확인이 필요하면 useEffect 사용
+  };
+
+  return <button onClick={handleClick}>{count}</button>;
+}`,
+        tags: ['useState', '비동기', '함수형 업데이트']
+      },
+      {
+        title: 'State 직접 변경 (Mutation) 문제',
+        code: `import { useState } from 'react';
+
+// ❌ 잘못된 방법 - 객체/배열 직접 변경
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = (text) => {
+    todos.push({ id: Date.now(), text }); // ❌ 직접 변경
+    setTodos(todos); // ❌ React가 감지 못함
+  };
+
+  return <div>{todos.length} todos</div>;
+}
+
+// ✅ 올바른 방법 - 새 배열/객체 생성
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = (text) => {
+    setTodos(prev => [...prev, { id: Date.now(), text }]); // ✅ 새 배열
+  };
+
+  const updateTodo = (id, newText) => {
+    setTodos(prev => prev.map(todo =>
+      todo.id === id ? { ...todo, text: newText } : todo // ✅ 새 객체
+    ));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(prev => prev.filter(todo => todo.id !== id)); // ✅ 새 배열
+  };
+
+  return <div>{todos.length} todos</div>;
+}`,
+        tags: ['useState', 'immutable', '배열', '객체']
+      },
+      {
+        title: 'Stale Closure 문제',
+        code: `import { useState, useEffect } from 'react';
+
+// ❌ 잘못된 방법 - Stale Closure
+function Timer() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCount(count + 1); // ❌ 항상 0 + 1 = 1
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []); // ❌ 빈 의존성 배열
+
+  return <div>{count}</div>;
+}
+
+// ✅ 해결책 1: 함수형 업데이트
+function Timer() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCount(prev => prev + 1); // ✅ 최신 값 사용
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []); // ✅ 의존성 없어도 동작
+
+  return <div>{count}</div>;
+}
+
+// ✅ 해결책 2: useRef 사용
+function Timer() {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(count);
+
+  useEffect(() => {
+    countRef.current = count; // 항상 최신 값 유지
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log('Current count:', countRef.current); // ✅ 최신 값
+      setCount(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return <div>{count}</div>;
+}`,
+        tags: ['closure', 'useEffect', 'useRef']
+      }
+    ]
+  },
+  {
+    category: 'useEffect 흔한 실수',
+    icon: '🔄',
+    snippets: [
+      {
+        title: '의존성 배열 누락',
+        code: `import { useState, useEffect } from 'react';
+
+// ❌ 잘못된 방법 - 의존성 누락
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetch(\`/api/users/\${userId}\`)
+      .then(res => res.json())
+      .then(setUser);
+  }, []); // ❌ userId 의존성 누락 - userId 변경 시 업데이트 안 됨
+
+  return <div>{user?.name}</div>;
+}
+
+// ✅ 올바른 방법 - 모든 의존성 포함
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(\`/api/users/\${userId}\`)
+      .then(res => res.json())
+      .then(data => {
+        setUser(data);
+        setLoading(false);
+      });
+  }, [userId]); // ✅ userId 포함 - 변경 시 재실행
+
+  if (loading) return <div>Loading...</div>;
+  return <div>{user?.name}</div>;
+}`,
+        tags: ['useEffect', 'dependencies', 'fetch']
+      },
+      {
+        title: 'Race Condition (경쟁 상태)',
+        code: `import { useState, useEffect } from 'react';
+
+// ❌ 잘못된 방법 - Race Condition
+function SearchResults({ query }) {
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    fetch(\`/api/search?q=\${query}\`)
+      .then(res => res.json())
+      .then(setResults); // ❌ 이전 요청 결과가 나중에 도착하면 덮어씀
+  }, [query]);
+
+  return <div>{results.length} results</div>;
+}
+
+// ✅ 해결책 1: AbortController 사용
+function SearchResults({ query }) {
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(\`/api/search?q=\${query}\`, {
+      signal: controller.signal // ✅ 취소 가능
+    })
+      .then(res => res.json())
+      .then(setResults)
+      .catch(err => {
+        if (err.name === 'AbortError') {
+          console.log('Fetch aborted');
+        }
+      });
+
+    return () => controller.abort(); // ✅ 이전 요청 취소
+  }, [query]);
+
+  return <div>{results.length} results</div>;
+}
+
+// ✅ 해결책 2: 무시 플래그
+function SearchResults({ query }) {
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    fetch(\`/api/search?q=\${query}\`)
+      .then(res => res.json())
+      .then(data => {
+        if (!ignore) { // ✅ 최신 요청만 반영
+          setResults(data);
+        }
+      });
+
+    return () => {
+      ignore = true; // ✅ 이전 요청 무시
+    };
+  }, [query]);
+
+  return <div>{results.length} results</div>;
+}`,
+        tags: ['race condition', 'AbortController', 'fetch']
+      },
+      {
+        title: '무한 루프 문제',
+        code: `import { useState, useEffect } from 'react';
+
+// ❌ 잘못된 방법 - 무한 루프
+function InfiniteLoop() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(count + 1); // ❌ count 변경 → 리렌더 → useEffect 재실행 → 무한 루프
+  }); // ❌ 의존성 배열 없음 - 매 렌더마다 실행
+
+  return <div>{count}</div>;
+}
+
+// ❌ 또 다른 실수 - 객체/배열 의존성
+function InfiniteLoop2() {
+  const [data, setData] = useState([]);
+  const options = { page: 1 }; // ❌ 매 렌더마다 새 객체
+
+  useEffect(() => {
+    fetch(\`/api/data?page=\${options.page}\`)
+      .then(res => res.json())
+      .then(setData);
+  }, [options]); // ❌ options는 항상 다른 객체 - 무한 루프
+
+  return <div>{data.length}</div>;
+}
+
+// ✅ 해결책 1: 빈 의존성 배열
+function Fixed1() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    setCount(1); // ✅ 마운트 시 한 번만
+  }, []); // ✅ 빈 배열 - 한 번만 실행
+
+  return <div>{count}</div>;
+}
+
+// ✅ 해결책 2: 원시 값 의존성
+function Fixed2() {
+  const [data, setData] = useState([]);
+  const page = 1; // ✅ 원시 값
+
+  useEffect(() => {
+    fetch(\`/api/data?page=\${page}\`)
+      .then(res => res.json())
+      .then(setData);
+  }, [page]); // ✅ 원시 값 - 안전
+
+  return <div>{data.length}</div>;
+}
+
+// ✅ 해결책 3: useMemo로 객체 메모이제이션
+function Fixed3() {
+  const [data, setData] = useState([]);
+  const options = useMemo(() => ({ page: 1 }), []); // ✅ 메모이제이션
+
+  useEffect(() => {
+    fetch(\`/api/data?page=\${options.page}\`)
+      .then(res => res.json())
+      .then(setData);
+  }, [options]); // ✅ 같은 객체 참조
+
+  return <div>{data.length}</div>;
+}`,
+        tags: ['infinite loop', '무한 루프', 'dependencies']
+      }
+    ]
+  },
+  {
+    category: 'Hydration 에러 (Next.js)',
+    icon: '💧',
+    snippets: [
+      {
+        title: 'Date/Time 불일치 문제',
+        code: `import { useState, useEffect } from 'react';
+
+// ❌ 잘못된 방법 - 서버/클라이언트 시간 불일치
+function CurrentTime() {
+  return (
+    <div>
+      Current time: {new Date().toLocaleTimeString()} {/* ❌ Hydration 에러 */}
+    </div>
+  );
+}
+
+// ✅ 해결책 1: useEffect로 클라이언트 전용 렌더링
+function CurrentTime() {
+  const [time, setTime] = useState(null);
+
+  useEffect(() => {
+    setTime(new Date().toLocaleTimeString()); // ✅ 클라이언트에서만
+
+    const interval = setInterval(() => {
+      setTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div>
+      Current time: {time || 'Loading...'} {/* ✅ SSR 시 기본값 */}
+    </div>
+  );
+}
+
+// ✅ 해결책 2: suppressHydrationWarning 사용 (조심스럽게)
+function CurrentTime() {
+  return (
+    <div suppressHydrationWarning>
+      Current time: {new Date().toLocaleTimeString()}
+    </div>
+  );
+}`,
+        tags: ['hydration', 'Next.js', 'Date']
+      },
+      {
+        title: 'Browser API 사용 문제',
+        code: `// ❌ 잘못된 방법 - window/localStorage 직접 사용
+function UserPreference() {
+  const theme = localStorage.getItem('theme') || 'light'; // ❌ SSR 시 에러
+
+  return <div className={theme}>Theme: {theme}</div>;
+}
+
+// ✅ 해결책 1: useEffect 사용
+function UserPreference() {
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+  }, []);
+
+  return <div className={theme}>Theme: {theme}</div>;
+}
+
+// ✅ 해결책 2: typeof window 체크
+function UserPreference() {
+  const theme = typeof window !== 'undefined'
+    ? localStorage.getItem('theme') || 'light'
+    : 'light'; // ✅ SSR 기본값
+
+  return <div className={theme}>Theme: {theme}</div>;
+}
+
+// ✅ 해결책 3: Next.js dynamic import (ssr: false)
+import dynamic from 'next/dynamic';
+
+const ClientOnlyComponent = dynamic(
+  () => import('./ClientOnlyComponent'),
+  { ssr: false } // ✅ SSR 비활성화
+);
+
+function Page() {
+  return <ClientOnlyComponent />;
+}`,
+        tags: ['hydration', 'localStorage', 'window', 'Next.js']
+      },
+      {
+        title: 'HTML 중첩 오류',
+        code: `// ❌ 잘못된 방법 - 잘못된 HTML 중첩
+function BadNesting() {
+  return (
+    <div>
+      {/* ❌ <p> 안에 <div> 불가 */}
+      <p>
+        <div>This is wrong</div>
+      </p>
+
+      {/* ❌ <a> 안에 <a> 불가 */}
+      <a href="/outer">
+        <a href="/inner">Click</a>
+      </a>
+
+      {/* ❌ <button> 안에 <button> 불가 */}
+      <button>
+        <button>Click</button>
+      </button>
+    </div>
+  );
+}
+
+// ✅ 올바른 방법 - 올바른 HTML 구조
+function GoodNesting() {
+  return (
+    <div>
+      {/* ✅ <div> 안에 <div> */}
+      <div>
+        <div>This is correct</div>
+      </div>
+
+      {/* ✅ 중첩 없이 별도 링크 */}
+      <div>
+        <a href="/outer">Outer Link</a>
+        <a href="/inner">Inner Link</a>
+      </div>
+
+      {/* ✅ <span>이나 <div>로 스타일링 */}
+      <button onClick={() => {}}>
+        <span className="button-content">Click</span>
+      </button>
+    </div>
+  );
+}`,
+        tags: ['hydration', 'HTML', 'nesting']
+      }
+    ]
+  },
+  {
+    category: 'TypeScript 타입 문제',
+    icon: '🔷',
+    snippets: [
+      {
+        title: 'Event 타입 지정',
+        code: `import { ChangeEvent, FormEvent, MouseEvent } from 'react';
+
+// ❌ 잘못된 방법 - any 사용
+function Form() {
+  const handleChange = (e: any) => { // ❌ any
+    console.log(e.target.value);
+  };
+
+  const handleSubmit = (e: any) => { // ❌ any
+    e.preventDefault();
+  };
+
+  return <form onSubmit={handleSubmit}>...</form>;
+}
+
+// ✅ 올바른 방법 - 정확한 타입
+function Form() {
+  const [value, setValue] = useState<string>('');
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => { // ✅
+    setValue(e.target.value);
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => { // ✅
+    e.preventDefault();
+    console.log('Submitted:', value);
+  };
+
+  const handleClick = (e: MouseEvent<HTMLButtonElement>) => { // ✅
+    console.log('Clicked at:', e.clientX, e.clientY);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={value} onChange={handleChange} />
+      <button type="submit" onClick={handleClick}>Submit</button>
+    </form>
+  );
+}`,
+        tags: ['TypeScript', 'event', 'type']
+      },
+      {
+        title: 'Props 타입 정의',
+        code: `import { ReactNode, FC } from 'react';
+
+// ❌ 잘못된 방법 - 타입 없음
+function Button({ children, onClick, variant }) { // ❌
+  return <button onClick={onClick}>{children}</button>;
+}
+
+// ✅ 방법 1: interface 사용
+interface ButtonProps {
+  children: ReactNode;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary'; // optional
+  disabled?: boolean;
+}
+
+function Button({ children, onClick, variant = 'primary', disabled }: ButtonProps) {
+  return (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
+  );
+}
+
+// ✅ 방법 2: type 사용
+type ButtonProps = {
+  children: ReactNode;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+};
+
+const Button: FC<ButtonProps> = ({ children, onClick, variant = 'primary' }) => {
+  return <button onClick={onClick}>{children}</button>;
+};
+
+// ✅ 방법 3: inline type
+function Button({
+  children,
+  onClick,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+}) {
+  return <button onClick={onClick}>{children}</button>;
+}`,
+        tags: ['TypeScript', 'props', 'interface']
+      },
+      {
+        title: 'useState 제네릭 타입',
+        code: `import { useState } from 'react';
+
+// ❌ 타입 추론에만 의존
+function UserProfile() {
+  const [user, setUser] = useState(null); // ❌ null 타입만
+
+  // 에러: user가 null일 수 있음
+  return <div>{user.name}</div>;
+}
+
+// ✅ 올바른 방법 - 제네릭 타입
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function UserProfile() {
+  const [user, setUser] = useState<User | null>(null); // ✅ Union 타입
+
+  useEffect(() => {
+    fetch('/api/user')
+      .then(res => res.json())
+      .then((data: User) => setUser(data));
+  }, []);
+
+  if (!user) return <div>Loading...</div>;
+
+  return <div>{user.name}</div>; // ✅ 타입 안전
+}
+
+// ✅ 초기값으로 타입 추론
+function Counter() {
+  const [count, setCount] = useState(0); // ✅ number로 추론
+  const [items, setItems] = useState<string[]>([]); // ✅ 빈 배열은 명시 필요
+
+  return <div>{count}</div>;
+}`,
+        tags: ['TypeScript', 'useState', 'generic']
+      }
+    ]
   }
 ];
